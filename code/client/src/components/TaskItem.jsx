@@ -122,12 +122,12 @@ const TaskItem = ({ task }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ scale: 1.01 }}
-      className={`bg-white p-5 rounded-2xl shadow-sm border flex items-start space-x-4 transition-all group ${
-        task.status === 'Completed' ? 'opacity-60 border-green-100' : 
-        deadlineStatus === 'Overdue' ? 'border-red-400 bg-red-50/50 shadow-md ring-1 ring-red-400' :
-        deadlineStatus === 'Near' ? 'border-orange-300 bg-orange-50/30 shadow-md ring-1 ring-orange-300' :
-        task.status === 'InProgress' ? 'opacity-100 border-blue-200 shadow-md' : 
-        'opacity-100 border-gray-100'
+      className={`p-5 rounded-2xl shadow-sm border flex items-start space-x-4 transition-all group ${
+        task.status === 'Completed' ? 'bg-white opacity-60 border-green-100' : 
+        deadlineStatus === 'Overdue' ? 'bg-red-50 border-red-400 shadow-md ring-1 ring-red-400' :
+        deadlineStatus === 'Near' ? 'bg-orange-50 border-orange-300 shadow-md ring-1 ring-orange-300' :
+        task.status === 'InProgress' ? 'bg-white opacity-100 border-blue-200 shadow-md' : 
+        'bg-white opacity-100 border-gray-100'
       }`}
     >
       <div className={`mt-1 flex-shrink-0 ${
@@ -177,17 +177,17 @@ const TaskItem = ({ task }) => {
             {task.priority}
           </span>
           {task.deadline && (
-            <span className={`flex items-center space-x-1 text-xs px-2 py-0.5 rounded-md border ${
-              deadlineStatus === 'Overdue' ? 'text-red-700 bg-red-100 border-red-200 font-bold' :
-              deadlineStatus === 'Near' ? 'text-orange-800 bg-orange-100 border-orange-200 font-bold' :
-              'text-indigo-600 bg-indigo-50 border-indigo-100'
+            <span className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-md border ${
+              deadlineStatus === 'Overdue' ? 'text-white bg-red-600 border-red-600 font-bold shadow-sm animate-pulse text-sm' :
+              deadlineStatus === 'Near' ? 'text-white bg-orange-500 border-orange-500 font-bold shadow-sm text-sm' :
+              'text-indigo-600 bg-indigo-50 border-indigo-100 text-xs'
             }`}>
-              {deadlineStatus === 'Overdue' ? <AlertOctagon size={12} /> : 
-               deadlineStatus === 'Near' ? <AlertTriangle size={12} /> : 
+              {deadlineStatus === 'Overdue' ? <AlertOctagon size={14} /> : 
+               deadlineStatus === 'Near' ? <AlertTriangle size={14} /> : 
                <Calendar size={12} />}
               <span>
-                {deadlineStatus === 'Overdue' ? `Overdue (${new Date(task.deadline).toLocaleDateString()})` : 
-                 deadlineStatus === 'Near' ? `Due Soon (${new Date(task.deadline).toLocaleDateString()})` :
+                {deadlineStatus === 'Overdue' ? `OVERDUE: ${new Date(task.deadline).toLocaleDateString()}` : 
+                 deadlineStatus === 'Near' ? `DUE SOON: ${new Date(task.deadline).toLocaleDateString()}` :
                  `Due: ${new Date(task.deadline).toLocaleDateString()}`}
               </span>
             </span>
