@@ -2,7 +2,10 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 
 const initialState = {
-  tasks: [],
+  tasks: {
+    byId: {},
+    allIds: []
+  },
   suggestions: [],
   isError: false,
   isSuccess: false,
@@ -75,7 +78,14 @@ export const taskSlice = createSlice({
       .addCase(getTasks.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.tasks = action.payload;
+        
+        state.tasks.byId = {};
+        state.tasks.allIds = [];
+        
+        action.payload.forEach(task => {
+          state.tasks.byId[task._id] = task;
+          state.tasks.allIds.push(task._id);
+        });
       })
       .addCase(getTasks.rejected, (state, action) => {
         state.isLoading = false;
@@ -83,16 +93,18 @@ export const taskSlice = createSlice({
         state.message = action.payload;
       })
       .addCase(createTask.fulfilled, (state, action) => {
-        state.tasks.unshift(action.payload);
+        const task = action.payload;
+        state.tasks.byId[task._id] = task;
+        state.tasks.allIds.unshift(task._id);
       })
       .addCase(updateTask.fulfilled, (state, action) => {
-        const index = state.tasks.findIndex(task => task._id === action.payload._id);
-        if (index !== -1) {
-          state.tasks[index] = action.payload;
-        }
+        const task = action.payload;
+        state.tasks.byId[task._id] = task;
       })
       .addCase(deleteTask.fulfilled, (state, action) => {
-        state.tasks = state.tasks.filter((task) => task._id !== action.payload);
+        const taskId = action.payload;
+        delete state.tasks.byId[taskId];
+        state.tasks.allIds = state.tasks.allIds.filter(id => id !== taskId);
       })
       .addCase(suggestTasks.fulfilled, (state, action) => {
         state.suggestions = action.payload;

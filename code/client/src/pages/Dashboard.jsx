@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { getTasks, suggestTasks, resetTasks } from '../features/tasks/taskSlice';
 import TaskForm from '../components/TaskForm';
 import TaskItem from '../components/TaskItem';
+import Filters from '../components/Filters';
 import { Sparkles, Loader, CheckSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -15,17 +16,48 @@ const Dashboard = () => {
   const [aiLoading, setAiLoading] = useState(false);
 
   const { user } = useSelector((state) => state.auth);
-  const { tasks, suggestions, isLoading, isError, message } = useSelector((state) => state.tasks);
+  const { tasks: normalizedTasks, suggestions, isLoading, isError, message } = useSelector((state) => state.tasks);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPriority, setFilterPriority] = useState('All');
 
-  const filteredTasks = tasks.filter(task => {
-    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesPriority = filterPriority === 'All' || task.priority === filterPriority;
-    return matchesSearch && matchesPriority;
-  });
+  // Derive task array from normalized state
+  const tasksArray = useMemo(() => {
+    if (!normalizedTasks || !normalizedTasks.allIds) return [];
+    return normalizedTasks.allIds.map(id => normalizedTasks.byId[id]).filter(Boolean);
+  }, [normalizedTasks]);
+
+  const filteredTasks = useMemo(() => {
+    return tasksArray.filter(task => {
+      const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesPriority = filterPriority === 'All' || task.priority === filterPriority;
+      return matchesSearch && matchesPriority;
+    });
+  }, [tasksArray, searchTerm, filterPriority]);
+
+  const sortedTasks = useMemo(() => {
+    return [...filteredTasks].sort((a, b) => {
+      if (a.status === 'Completed' && b.status !== 'Completed') return 1;
+      if (b.status === 'Completed' && a.status !== 'Completed') return -1;
+      
+      if (a.deadline && b.deadline) {
+        const diff = new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+        if (diff !== 0) return diff;
+      } else if (a.deadline && !b.deadline) {
+        return -1; 
+      } else if (!a.deadline && b.deadline) {
+        return 1;
+      }
+      
+      const weight = { High: 3, Medium: 2, Low: 1 };
+      if (weight[a.priority] !== weight[b.priority]) {
+        return weight[b.priority] - weight[a.priority];
+      }
+      
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+  }, [filteredTasks]);
 
   useEffect(() => {
     if (isError) {
@@ -49,7 +81,7 @@ const Dashboard = () => {
     setShowAiSuggestions(true);
   };
 
-  if (isLoading && tasks.length === 0) {
+  if (isLoading && tasksArray.length === 0) {
     return <div className="flex justify-center items-center h-64"><Loader className="animate-spin text-indigo-600 h-10 w-10" /></div>;
   }
 
@@ -59,7 +91,7 @@ const Dashboard = () => {
       <div className="lg:col-span-1 space-y-6">
         <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl p-6 text-white shadow-lg">
           <h2 className="text-2xl font-bold mb-2">Hello, {user && user.name.split(' ')[0]} 👋</h2>
-          <p className="text-indigo-100 mb-6">You have {tasks.filter(t => t.status !== 'Completed').length} active tasks.</p>
+          <p className="text-indigo-100 mb-6">You have {tasksArray.filter(t => t.status !== 'Completed').length} active tasks.</p>
           
           <button 
             onClick={handleAiSuggest}
@@ -128,25 +160,12 @@ const Dashboard = () => {
               </span>
             </h3>
             
-            <div className="flex w-full sm:w-auto space-x-3">
-              <input 
-                type="text" 
-                placeholder="Search tasks..." 
-                className="w-full sm:w-48 px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <select 
-                className="px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-white cursor-pointer transition"
-                value={filterPriority}
-                onChange={(e) => setFilterPriority(e.target.value)}
-              >
-                <option value="All">All Priorities</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-              </select>
-            </div>
+            <Filters 
+              searchTerm={searchTerm} 
+              setSearchTerm={setSearchTerm} 
+              filterPriority={filterPriority} 
+              setFilterPriority={setFilterPriority} 
+            />
           </div>
 
           {filteredTasks.length === 0 ? (
@@ -155,7 +174,7 @@ const Dashboard = () => {
                 <CheckSquare size={32} className="text-gray-400" />
               </div>
               <p className="text-lg">No tasks found.</p>
-              {tasks.length === 0 ? (
+              {tasksArray.length === 0 ? (
                 <p className="text-sm mt-1">Add one to the left to get started!</p>
               ) : (
                 <p className="text-sm mt-1">Try adjusting your filters.</p>
@@ -164,30 +183,7 @@ const Dashboard = () => {
           ) : (
             <div className="space-y-4">
               <AnimatePresence>
-                {[...filteredTasks].sort((a, b) => {
-                  // 1. Move completed tasks to the bottom
-                  if (a.status === 'Completed' && b.status !== 'Completed') return 1;
-                  if (b.status === 'Completed' && a.status !== 'Completed') return -1;
-                  
-                  // 2. Sort by nearest Deadline
-                  if (a.deadline && b.deadline) {
-                    const diff = new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
-                    if (diff !== 0) return diff;
-                  } else if (a.deadline && !b.deadline) {
-                    return -1; // Tasks with deadline come first
-                  } else if (!a.deadline && b.deadline) {
-                    return 1;
-                  }
-                  
-                  // 3. Sort by highest Priority
-                  const weight = { High: 3, Medium: 2, Low: 1 };
-                  if (weight[a.priority] !== weight[b.priority]) {
-                    return weight[b.priority] - weight[a.priority];
-                  }
-                  
-                  // 4. Default: Newest created first
-                  return new Date(b.createdAt) - new Date(a.createdAt);
-                }).map((task) => (
+                {sortedTasks.map((task) => (
                   <TaskItem key={task._id} task={task} />
                 ))}
               </AnimatePresence>

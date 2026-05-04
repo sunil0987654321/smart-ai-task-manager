@@ -157,4 +157,4 @@ const TaskItem = ({ task }) => {
   );
 };
 
-export default TaskItem;
+export default React.memo(TaskItem);
