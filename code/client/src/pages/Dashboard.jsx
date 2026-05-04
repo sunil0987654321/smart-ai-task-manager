@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { getTasks, suggestTasks, resetTasks } from '../features/tasks/taskSlice';
+import { getTasks, suggestTasks, resetTasks, createTask } from '../features/tasks/taskSlice';
 import TaskForm from '../components/TaskForm';
 import TaskItem from '../components/TaskItem';
 import Filters from '../components/Filters';
 import { Sparkles, Loader, CheckSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDebounce } from '../hooks/useDebounce';
+import toast from 'react-hot-toast';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -118,9 +119,6 @@ const Dashboard = () => {
   }, [debouncedSearchTerm, filterPriority, filterStatus, sortOption]);
 
   useEffect(() => {
-    if (isError) {
-      console.log(message);
-    }
     if (!user) {
       navigate('/login');
     } else {
@@ -130,13 +128,25 @@ const Dashboard = () => {
     return () => {
       dispatch(resetTasks());
     };
-  }, [user, navigate, isError, message, dispatch]);
+  }, [user, navigate, dispatch]);
+
+  useEffect(() => {
+    if (isError) {
+      console.log(message);
+    }
+  }, [isError, message]);
 
   const handleAiSuggest = async () => {
     setAiLoading(true);
-    await dispatch(suggestTasks());
-    setAiLoading(false);
-    setShowAiSuggestions(true);
+    try {
+      await dispatch(suggestTasks()).unwrap();
+      toast.success('AI generated task suggestions!');
+      setShowAiSuggestions(true);
+    } catch (error) {
+      // global interceptor handles error
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   // Skeleton Loaders
@@ -169,7 +179,8 @@ const Dashboard = () => {
           <button 
             onClick={handleAiSuggest}
             disabled={aiLoading}
-            className="w-full flex items-center justify-center space-x-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-medium py-3 px-4 rounded-xl transition border border-white/20 disabled:opacity-50"
+            aria-label="Get AI Suggestions"
+            className="w-full flex items-center justify-center space-x-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-medium py-3 px-4 rounded-xl transition border border-white/20 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             {aiLoading ? <Loader className="animate-spin" size={18} /> : <Sparkles size={18} />}
             <span>Get AI Suggestions</span>
@@ -254,7 +265,8 @@ const Dashboard = () => {
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
-                className={`flex items-center px-4 py-2 rounded-xl text-sm font-medium transition whitespace-nowrap ${
+                aria-label={`Filter by ${status}`}
+                className={`flex items-center px-4 py-2 rounded-xl text-sm font-medium transition whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   filterStatus === status 
                     ? 'bg-indigo-600 text-white shadow-md' 
                     : 'bg-white text-gray-600 hover:bg-indigo-50 border border-gray-200'
@@ -275,14 +287,28 @@ const Dashboard = () => {
               renderSkeletons()
             ) : filteredTasks.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-                <div className="bg-gray-100 p-4 rounded-full mb-4">
-                  <CheckSquare size={32} className="text-gray-400" />
-                </div>
-                <p className="text-lg">No tasks found.</p>
-                {tasksArray.length === 0 ? (
-                  <p className="text-sm mt-1">Add one to the left to get started!</p>
+                {isError ? (
+                  <div className="text-center">
+                    <p className="text-lg text-red-500 mb-4">Failed to load tasks.</p>
+                    <button 
+                      onClick={() => dispatch(getTasks())}
+                      className="px-6 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 active:scale-95"
+                    >
+                      Retry Now
+                    </button>
+                  </div>
                 ) : (
-                  <p className="text-sm mt-1">Try adjusting your filters.</p>
+                  <>
+                    <div className="bg-gray-100 p-4 rounded-full mb-4">
+                      <CheckSquare size={32} className="text-gray-400" />
+                    </div>
+                    <p className="text-lg">No tasks found.</p>
+                    {tasksArray.length === 0 ? (
+                      <p className="text-sm mt-1">Add one to the left to get started!</p>
+                    ) : (
+                      <p className="text-sm mt-1">Try adjusting your filters.</p>
+                    )}
+                  </>
                 )}
               </div>
             ) : (

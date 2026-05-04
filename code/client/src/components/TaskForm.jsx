@@ -3,6 +3,8 @@ import { useDispatch } from 'react-redux';
 import { createTask } from '../features/tasks/taskSlice';
 import { PlusCircle } from 'lucide-react';
 
+import toast from 'react-hot-toast';
+
 const TaskForm = ({ onTaskAdded }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -11,7 +13,7 @@ const TaskForm = ({ onTaskAdded }) => {
   
   const dispatch = useDispatch();
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (!title) return;
     
@@ -20,16 +22,21 @@ const TaskForm = ({ onTaskAdded }) => {
       taskData.deadline = deadline;
     }
 
-    dispatch(createTask(taskData));
-    
-    if (onTaskAdded) {
-      onTaskAdded();
-    }
+    try {
+      await dispatch(createTask(taskData)).unwrap();
+      toast.success('Task added successfully!');
+      
+      if (onTaskAdded) {
+        onTaskAdded();
+      }
 
-    setTitle('');
-    setDescription('');
-    setPriority('Medium');
-    setDeadline('');
+      setTitle('');
+      setDescription('');
+      setPriority('Medium');
+      setDeadline('');
+    } catch (err) {
+      // Error is handled by global interceptor
+    }
   };
 
   return (
@@ -74,7 +81,9 @@ const TaskForm = ({ onTaskAdded }) => {
         </div>
         <button
           type="submit"
-          className="w-full flex items-center justify-center space-x-2 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition mt-2"
+          disabled={!title}
+          aria-label="Add New Task"
+          className="w-full flex items-center justify-center space-x-2 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition mt-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
           <PlusCircle size={18} />
           <span>Add Task</span>

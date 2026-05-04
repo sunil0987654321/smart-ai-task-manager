@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { deleteTask, updateTask } from '../features/tasks/taskSlice';
 import { Trash2, CheckCircle, Circle, Edit2, Calendar, Save, X, PlayCircle, ChevronDown, AlertTriangle, AlertOctagon } from 'lucide-react';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 const TaskItem = ({ task }) => {
   const dispatch = useDispatch();
@@ -19,10 +20,24 @@ const TaskItem = ({ task }) => {
     setEditData({ ...editData, [e.target.name]: e.target.value });
   };
 
-  const submitEdit = () => {
+  const submitEdit = async () => {
     if (!editData.title) return;
-    dispatch(updateTask({ id: task._id, taskData: editData }));
-    setIsEditing(false);
+    try {
+      await dispatch(updateTask({ id: task._id, taskData: editData })).unwrap();
+      toast.success('Task updated!');
+      setIsEditing(false);
+    } catch (error) {
+      // Error is handled by global interceptor
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await dispatch(deleteTask(task._id)).unwrap();
+      toast.success('Task deleted!');
+    } catch (error) {
+      // Error handled globally
+    }
   };
 
   const cancelEdit = () => {
@@ -122,12 +137,12 @@ const TaskItem = ({ task }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ scale: 1.01 }}
-      className={`bg-white p-5 rounded-2xl shadow-sm border flex items-start space-x-4 transition-all group ${
-        task.status === 'Completed' ? 'opacity-60 border-green-100' : 
-        deadlineStatus === 'Overdue' ? 'border-red-400 bg-red-50/50 shadow-md ring-1 ring-red-400' :
-        deadlineStatus === 'Near' ? 'border-orange-300 bg-orange-50/30 shadow-md ring-1 ring-orange-300' :
-        task.status === 'InProgress' ? 'opacity-100 border-blue-200 shadow-md' : 
-        'opacity-100 border-gray-100'
+      className={`p-5 rounded-2xl shadow-sm border flex items-start space-x-4 transition-all group ${
+        task.status === 'Completed' ? 'bg-white opacity-60 border-green-100' : 
+        deadlineStatus === 'Overdue' ? 'bg-red-50 border-red-400 shadow-md ring-1 ring-red-400' :
+        deadlineStatus === 'Near' ? 'bg-orange-50 border-orange-300 shadow-md ring-1 ring-orange-300' :
+        task.status === 'InProgress' ? 'bg-white opacity-100 border-blue-200 shadow-md' : 
+        'bg-white opacity-100 border-gray-100'
       }`}
     >
       <div className={`mt-1 flex-shrink-0 ${
@@ -154,8 +169,17 @@ const TaskItem = ({ task }) => {
           <div className="relative inline-block">
             <select
               value={task.status}
-              onChange={(e) => dispatch(updateTask({ id: task._id, taskData: { status: e.target.value } }))}
-              className={`text-xs font-semibold pl-3 pr-7 py-0.5 rounded-full cursor-pointer outline-none appearance-none transition-colors ${
+              aria-label="Change Task Status"
+              onChange={async (e) => {
+                const newStatus = e.target.value;
+                try {
+                  await dispatch(updateTask({ id: task._id, taskData: { status: newStatus } })).unwrap();
+                  toast.success(`Status updated to ${newStatus}`);
+                } catch (error) {
+                  // Reverted optimistically, toast handled globally
+                }
+              }}
+              className={`text-xs font-semibold pl-3 pr-7 py-0.5 rounded-full cursor-pointer appearance-none transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 task.status === 'Completed' ? 'bg-green-100 text-green-800 border border-green-200 hover:bg-green-200' :
                 task.status === 'InProgress' ? 'bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200' :
                 'bg-yellow-100 text-yellow-800 border border-yellow-200 hover:bg-yellow-200'
@@ -177,17 +201,17 @@ const TaskItem = ({ task }) => {
             {task.priority}
           </span>
           {task.deadline && (
-            <span className={`flex items-center space-x-1 text-xs px-2 py-0.5 rounded-md border ${
-              deadlineStatus === 'Overdue' ? 'text-red-700 bg-red-100 border-red-200 font-bold' :
-              deadlineStatus === 'Near' ? 'text-orange-800 bg-orange-100 border-orange-200 font-bold' :
-              'text-indigo-600 bg-indigo-50 border-indigo-100'
+            <span className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-md border ${
+              deadlineStatus === 'Overdue' ? 'text-white bg-red-600 border-red-600 font-bold shadow-sm animate-pulse text-sm' :
+              deadlineStatus === 'Near' ? 'text-white bg-orange-500 border-orange-500 font-bold shadow-sm text-sm' :
+              'text-indigo-600 bg-indigo-50 border-indigo-100 text-xs'
             }`}>
-              {deadlineStatus === 'Overdue' ? <AlertOctagon size={12} /> : 
-               deadlineStatus === 'Near' ? <AlertTriangle size={12} /> : 
+              {deadlineStatus === 'Overdue' ? <AlertOctagon size={14} /> : 
+               deadlineStatus === 'Near' ? <AlertTriangle size={14} /> : 
                <Calendar size={12} />}
               <span>
-                {deadlineStatus === 'Overdue' ? `Overdue (${new Date(task.deadline).toLocaleDateString()})` : 
-                 deadlineStatus === 'Near' ? `Due Soon (${new Date(task.deadline).toLocaleDateString()})` :
+                {deadlineStatus === 'Overdue' ? `OVERDUE: ${new Date(task.deadline).toLocaleDateString()}` : 
+                 deadlineStatus === 'Near' ? `DUE SOON: ${new Date(task.deadline).toLocaleDateString()}` :
                  `Due: ${new Date(task.deadline).toLocaleDateString()}`}
               </span>
             </span>
@@ -201,15 +225,17 @@ const TaskItem = ({ task }) => {
       <div className="flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           onClick={() => setIsEditing(true)}
-          className="flex-shrink-0 text-gray-400 hover:text-indigo-500 p-1 transition"
+          className="flex-shrink-0 text-gray-400 hover:text-indigo-500 p-1 transition rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
           title="Edit Task"
+          aria-label="Edit Task"
         >
           <Edit2 size={18} />
         </button>
         <button
-          onClick={() => dispatch(deleteTask(task._id))}
-          className="flex-shrink-0 text-gray-400 hover:text-red-500 p-1 transition"
+          onClick={handleDelete}
+          className="flex-shrink-0 text-gray-400 hover:text-red-500 p-1 transition rounded focus:outline-none focus:ring-2 focus:ring-red-500"
           title="Delete Task"
+          aria-label="Delete Task"
         >
           <Trash2 size={18} />
         </button>

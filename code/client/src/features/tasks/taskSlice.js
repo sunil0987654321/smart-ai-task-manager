@@ -38,8 +38,9 @@ export const updateTask = createAsyncThunk('tasks/update', async ({ id, taskData
     const response = await api.put(`/tasks/${id}`, taskData);
     return response.data;
   } catch (error) {
+    const originalTask = thunkAPI.getState().tasks.tasks.byId[id];
     const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-    return thunkAPI.rejectWithValue(message);
+    return thunkAPI.rejectWithValue({ message, originalTask, id });
   }
 });
 
@@ -48,8 +49,9 @@ export const deleteTask = createAsyncThunk('tasks/delete', async (id, thunkAPI) 
     const response = await api.delete(`/tasks/${id}`);
     return id;
   } catch (error) {
+    const originalTask = thunkAPI.getState().tasks.tasks.byId[id];
     const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-    return thunkAPI.rejectWithValue(message);
+    return thunkAPI.rejectWithValue({ message, originalTask, id });
   }
 });
 
@@ -69,6 +71,9 @@ export const taskSlice = createSlice({
   initialState,
   reducers: {
     resetTasks: (state) => initialState,
+    setNetworkError: (state, action) => {
+      state.showNetworkError = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -97,14 +102,37 @@ export const taskSlice = createSlice({
         state.tasks.byId[task._id] = task;
         state.tasks.allIds.unshift(task._id);
       })
+      .addCase(updateTask.pending, (state, action) => {
+        const { id, taskData } = action.meta.arg;
+        if (state.tasks.byId[id]) {
+          state.tasks.byId[id] = { ...state.tasks.byId[id], ...taskData };
+        }
+      })
       .addCase(updateTask.fulfilled, (state, action) => {
         const task = action.payload;
         state.tasks.byId[task._id] = task;
       })
+      .addCase(updateTask.rejected, (state, action) => {
+        const { id, originalTask } = action.payload || {};
+        if (id && originalTask) {
+          state.tasks.byId[id] = originalTask;
+        }
+      })
+      .addCase(deleteTask.pending, (state, action) => {
+        const id = action.meta.arg;
+        if (state.tasks.byId[id]) {
+          state.tasks.allIds = state.tasks.allIds.filter(taskId => taskId !== id);
+        }
+      })
       .addCase(deleteTask.fulfilled, (state, action) => {
         const taskId = action.payload;
         delete state.tasks.byId[taskId];
-        state.tasks.allIds = state.tasks.allIds.filter(id => id !== taskId);
+      })
+      .addCase(deleteTask.rejected, (state, action) => {
+        const { id, originalTask } = action.payload || {};
+        if (id && originalTask) {
+          state.tasks.allIds.unshift(id);
+        }
       })
       .addCase(suggestTasks.fulfilled, (state, action) => {
         state.suggestions = action.payload;
@@ -112,5 +140,5 @@ export const taskSlice = createSlice({
   },
 });
 
-export const { resetTasks } = taskSlice.actions;
+export const { resetTasks, setNetworkError } = taskSlice.actions;
 export default taskSlice.reducer;

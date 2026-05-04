@@ -1,4 +1,5 @@
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api', // Backend base URL
@@ -14,6 +15,21 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor for global error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.message === 'Network Error') {
+      // Trigger a custom event for the global network error modal
+      window.dispatchEvent(new CustomEvent('network-error'));
+    } else {
+      const message = (error.response && error.response.data && error.response.data.message) || error.message || 'Something went wrong';
+      toast.error(message);
+    }
     return Promise.reject(error);
   }
 );
