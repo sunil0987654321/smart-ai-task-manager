@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { deleteTask, updateTask } from '../features/tasks/taskSlice';
-import { Trash2, CheckCircle, Circle, Edit2, Calendar, Save, X, PlayCircle, ChevronDown } from 'lucide-react';
+import { Trash2, CheckCircle, Circle, Edit2, Calendar, Save, X, PlayCircle, ChevronDown, AlertTriangle, AlertOctagon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const TaskItem = ({ task }) => {
@@ -40,6 +40,25 @@ const TaskItem = ({ task }) => {
     Medium: 'bg-yellow-100 text-yellow-800',
     High: 'bg-red-100 text-red-800',
   };
+
+  const getDeadlineStatus = () => {
+    if (!task.deadline || task.status === 'Completed') return 'Normal';
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const taskDeadline = new Date(task.deadline);
+    taskDeadline.setHours(0, 0, 0, 0);
+    
+    const diffTime = taskDeadline.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) return 'Overdue';
+    if (diffDays <= 2) return 'Near';
+    return 'Normal';
+  };
+
+  const deadlineStatus = getDeadlineStatus();
 
   if (isEditing) {
     return (
@@ -105,6 +124,8 @@ const TaskItem = ({ task }) => {
       whileHover={{ scale: 1.01 }}
       className={`bg-white p-5 rounded-2xl shadow-sm border flex items-start space-x-4 transition-all group ${
         task.status === 'Completed' ? 'opacity-60 border-green-100' : 
+        deadlineStatus === 'Overdue' ? 'border-red-400 bg-red-50/50 shadow-md ring-1 ring-red-400' :
+        deadlineStatus === 'Near' ? 'border-orange-300 bg-orange-50/30 shadow-md ring-1 ring-orange-300' :
         task.status === 'InProgress' ? 'opacity-100 border-blue-200 shadow-md' : 
         'opacity-100 border-gray-100'
       }`}
@@ -156,9 +177,19 @@ const TaskItem = ({ task }) => {
             {task.priority}
           </span>
           {task.deadline && (
-            <span className="flex items-center space-x-1 text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
-              <Calendar size={12} />
-              <span>Due: {new Date(task.deadline).toLocaleDateString()}</span>
+            <span className={`flex items-center space-x-1 text-xs px-2 py-0.5 rounded-md border ${
+              deadlineStatus === 'Overdue' ? 'text-red-700 bg-red-100 border-red-200 font-bold' :
+              deadlineStatus === 'Near' ? 'text-orange-800 bg-orange-100 border-orange-200 font-bold' :
+              'text-indigo-600 bg-indigo-50 border-indigo-100'
+            }`}>
+              {deadlineStatus === 'Overdue' ? <AlertOctagon size={12} /> : 
+               deadlineStatus === 'Near' ? <AlertTriangle size={12} /> : 
+               <Calendar size={12} />}
+              <span>
+                {deadlineStatus === 'Overdue' ? `Overdue (${new Date(task.deadline).toLocaleDateString()})` : 
+                 deadlineStatus === 'Near' ? `Due Soon (${new Date(task.deadline).toLocaleDateString()})` :
+                 `Due: ${new Date(task.deadline).toLocaleDateString()}`}
+              </span>
             </span>
           )}
           <span className="text-xs text-gray-400">
