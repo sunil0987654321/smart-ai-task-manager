@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { deleteTask, updateTask } from '../features/tasks/taskSlice';
-import { Trash2, CheckCircle, Circle, Edit2, Calendar, Save, X } from 'lucide-react';
+import { Trash2, CheckCircle, Circle, Edit2, Calendar, Save, X, PlayCircle, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const TaskItem = ({ task }) => {
@@ -14,10 +14,6 @@ const TaskItem = ({ task }) => {
     deadline: task.deadline ? new Date(task.deadline).toISOString().split('T')[0] : ''
   });
 
-  const toggleStatus = () => {
-    const newStatus = task.status === 'Completed' ? 'Todo' : 'Completed';
-    dispatch(updateTask({ id: task._id, taskData: { status: newStatus } }));
-  };
 
   const handleEditChange = (e) => {
     setEditData({ ...editData, [e.target.name]: e.target.value });
@@ -107,21 +103,55 @@ const TaskItem = ({ task }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ scale: 1.01 }}
-      className={`bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-start space-x-4 transition-all group ${
-        task.status === 'Completed' ? 'opacity-60' : 'opacity-100'
+      className={`bg-white p-5 rounded-2xl shadow-sm border flex items-start space-x-4 transition-all group ${
+        task.status === 'Completed' ? 'opacity-60 border-green-100' : 
+        task.status === 'InProgress' ? 'opacity-100 border-blue-200 shadow-md' : 
+        'opacity-100 border-gray-100'
       }`}
     >
-      <button onClick={toggleStatus} className="mt-1 flex-shrink-0 text-indigo-600 hover:text-indigo-800 transition">
-        {task.status === 'Completed' ? <CheckCircle size={24} /> : <Circle size={24} />}
-      </button>
+      <div className={`mt-1 flex-shrink-0 ${
+        task.status === 'Completed' ? 'text-green-500' :
+        task.status === 'InProgress' ? 'text-blue-500' :
+        'text-yellow-500'
+      }`}>
+        {task.status === 'Completed' ? <CheckCircle size={24} /> : 
+         task.status === 'InProgress' ? <PlayCircle size={24} /> : 
+         <Circle size={24} />}
+      </div>
       
       <div className="flex-grow">
-        <h4 className={`text-lg font-bold ${task.status === 'Completed' ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+        <h4 className={`text-lg font-bold transition-colors ${
+          task.status === 'Completed' ? 'line-through text-gray-400' : 
+          task.status === 'InProgress' ? 'text-blue-800' : 
+          'text-gray-800'
+        }`}>
           {task.title}
         </h4>
-        {task.description && <p className="text-gray-600 mt-1 text-sm">{task.description}</p>}
+        {task.description && <p className={`mt-1 text-sm ${task.status === 'Completed' ? 'text-gray-400 line-through' : 'text-gray-600'}`}>{task.description}</p>}
         
         <div className="flex flex-wrap items-center gap-3 mt-3">
+          <div className="relative inline-block">
+            <select
+              value={task.status}
+              onChange={(e) => dispatch(updateTask({ id: task._id, taskData: { status: e.target.value } }))}
+              className={`text-xs font-semibold pl-3 pr-7 py-0.5 rounded-full cursor-pointer outline-none appearance-none transition-colors ${
+                task.status === 'Completed' ? 'bg-green-100 text-green-800 border border-green-200 hover:bg-green-200' :
+                task.status === 'InProgress' ? 'bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200' :
+                'bg-yellow-100 text-yellow-800 border border-yellow-200 hover:bg-yellow-200'
+              }`}
+            >
+              <option value="Todo">Todo</option>
+              <option value="InProgress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+            <div className={`absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none ${
+              task.status === 'Completed' ? 'text-green-600' :
+              task.status === 'InProgress' ? 'text-blue-600' :
+              'text-yellow-600'
+            }`}>
+              <ChevronDown size={12} strokeWidth={3} />
+            </div>
+          </div>
           <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${priorityColors[task.priority]}`}>
             {task.priority}
           </span>

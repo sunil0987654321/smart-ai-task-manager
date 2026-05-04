@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { createTask } from '../features/tasks/taskSlice';
 import { PlusCircle } from 'lucide-react';
 
-const TaskForm = () => {
+const TaskForm = ({ onTaskAdded }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState('Medium');
@@ -21,6 +21,11 @@ const TaskForm = () => {
     }
 
     dispatch(createTask(taskData));
+    
+    if (onTaskAdded) {
+      onTaskAdded();
+    }
+
     setTitle('');
     setDescription('');
     setPriority('Medium');
