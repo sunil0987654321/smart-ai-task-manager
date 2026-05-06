@@ -172,19 +172,21 @@ const Dashboard = () => {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* Left Column - Forms and AI */}
       <div className="lg:col-span-1 space-y-6">
-        <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl p-6 text-white shadow-lg">
+        <div className="bg-gradient-to-br from-indigo-600 to-blue-700 dark:from-indigo-600/20 dark:to-blue-700/20 rounded-2xl p-6 text-white dark:text-indigo-100 shadow-lg dark:shadow-glow border border-transparent dark:border-indigo-500/20 backdrop-blur-md">
           <h2 className="text-2xl font-bold mb-2">Hello, {user && user.name.split(' ')[0]} 👋</h2>
-          <p className="text-indigo-100 mb-6">You have {tasksArray.filter(t => t.status !== 'Completed').length} active tasks.</p>
+          <p className="text-indigo-100 dark:text-indigo-300/80 mb-6">You have {tasksArray.filter(t => t.status !== 'Completed').length} active tasks.</p>
           
-          <button 
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleAiSuggest}
             disabled={aiLoading}
             aria-label="Get AI Suggestions"
-            className="w-full flex items-center justify-center space-x-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-medium py-3 px-4 rounded-xl transition border border-white/20 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="w-full flex items-center justify-center space-x-2 bg-white/20 dark:bg-indigo-500/30 hover:bg-white/30 dark:hover:bg-indigo-500/40 backdrop-blur-sm text-white font-medium py-3 px-4 rounded-xl transition border border-white/20 dark:border-indigo-400/30 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover-line-animation"
           >
             {aiLoading ? <Loader className="animate-spin" size={18} /> : <Sparkles size={18} />}
             <span>Get AI Suggestions</span>
-          </button>
+          </motion.button>
         </div>
 
         <AnimatePresence>
@@ -193,9 +195,9 @@ const Dashboard = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-indigo-50 border border-indigo-100 p-5 rounded-2xl overflow-hidden"
+              className="bg-indigo-50/50 dark:bg-black/40 border border-indigo-100 dark:border-white/5 p-5 rounded-2xl overflow-hidden backdrop-blur-md"
             >
-              <h3 className="font-bold text-indigo-800 flex items-center space-x-2 mb-3">
+              <h3 className="font-bold text-indigo-800 dark:text-indigo-400 flex items-center space-x-2 mb-3">
                 <Sparkles size={16} /> <span>AI Recommended</span>
               </h3>
               <div className="space-y-3">
@@ -240,11 +242,11 @@ const Dashboard = () => {
 
       {/* Right Column - Task List */}
       <div className="lg:col-span-2">
-        <div className="bg-white/50 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-gray-100 min-h-[60vh] flex flex-col">
+        <div className="glass-card rounded-3xl p-6 min-h-[60vh] flex flex-col transition-all duration-500">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-            <h3 className="text-2xl font-bold text-gray-800 flex items-center">
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-slate-100 flex items-center">
               Your Tasks
-              <span className="ml-3 text-sm font-normal bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">
+              <span className="ml-3 text-sm font-normal bg-indigo-100 dark:bg-indigo-500/20 text-indigo-800 dark:text-indigo-300 px-3 py-1 rounded-full border border-indigo-200 dark:border-indigo-500/30">
                 {filteredTasks.length} Total
               </span>
             </h3>
@@ -266,15 +268,15 @@ const Dashboard = () => {
                 key={status}
                 onClick={() => setFilterStatus(status)}
                 aria-label={`Filter by ${status}`}
-                className={`flex items-center px-4 py-2 rounded-xl text-sm font-medium transition whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                className={`flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   filterStatus === status 
-                    ? 'bg-indigo-600 text-white shadow-md' 
-                    : 'bg-white text-gray-600 hover:bg-indigo-50 border border-gray-200'
+                    ? 'bg-indigo-600 text-white shadow-lg dark:shadow-indigo-500/20' 
+                    : 'bg-white/50 dark:bg-black/40 text-gray-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-black/60 border border-gray-200 dark:border-white/5'
                 }`}
               >
                 {status === 'InProgress' ? 'In Progress' : status} 
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
-                  filterStatus === status ? 'bg-indigo-400 text-white' : 'bg-gray-100 text-gray-500'
+                  filterStatus === status ? 'bg-indigo-400/50 text-white' : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-slate-500'
                 }`}>
                   {statusCounts[status]}
                 </span>

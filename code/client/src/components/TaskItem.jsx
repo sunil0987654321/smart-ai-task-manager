@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { deleteTask, updateTask } from '../features/tasks/taskSlice';
-import { Trash2, CheckCircle, Circle, Edit2, Calendar, Save, X, PlayCircle, ChevronDown, AlertTriangle, AlertOctagon } from 'lucide-react';
+import { Trash2, CheckCircle, Circle, Edit2, Calendar, Save, X, PlayCircle, ChevronDown, AlertTriangle, AlertOctagon, Clock, PenTool, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import CustomDropdown from './CustomDropdown';
 
 const TaskItem = ({ task }) => {
   const dispatch = useDispatch();
@@ -51,9 +52,9 @@ const TaskItem = ({ task }) => {
   };
 
   const priorityColors = {
-    Low: 'bg-green-100 text-green-800',
-    Medium: 'bg-yellow-100 text-yellow-800',
-    High: 'bg-red-100 text-red-800',
+    Low: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20',
+    Medium: 'bg-amber-100 dark:bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20',
+    High: 'bg-rose-100 dark:bg-rose-500/10 text-rose-800 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20',
   };
 
   const getDeadlineStatus = () => {
@@ -79,7 +80,7 @@ const TaskItem = ({ task }) => {
     return (
       <motion.div
         layout
-        className="bg-white p-5 rounded-2xl shadow-md border border-indigo-200"
+        className="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-md border border-indigo-200 dark:border-indigo-500/30 transition-colors"
       >
         <div className="space-y-3">
           <input
@@ -87,14 +88,14 @@ const TaskItem = ({ task }) => {
             name="title"
             value={editData.title}
             onChange={handleEditChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
             placeholder="Task Title"
           />
           <textarea
             name="description"
             value={editData.description}
             onChange={handleEditChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
             placeholder="Description"
             rows="2"
           ></textarea>
@@ -103,22 +104,22 @@ const TaskItem = ({ task }) => {
               name="priority"
               value={editData.priority}
               onChange={handleEditChange}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded outline-none"
+              className="flex-1 px-3 py-2 border border-gray-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-indigo-500 outline-none transition"
             >
-              <option value="Low">Low Priority</option>
-              <option value="Medium">Medium Priority</option>
-              <option value="High">High Priority</option>
+              <option value="Low" className="dark:bg-slate-900">Low Priority</option>
+              <option value="Medium" className="dark:bg-slate-900">Medium Priority</option>
+              <option value="High" className="dark:bg-slate-900">High Priority</option>
             </select>
             <input
               type="date"
               name="deadline"
               value={editData.deadline}
               onChange={handleEditChange}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded outline-none text-gray-600"
+              className="flex-1 px-3 py-2 border border-gray-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-indigo-500 outline-none transition"
             />
           </div>
           <div className="flex justify-end space-x-2 pt-2">
-            <button onClick={cancelEdit} className="flex items-center space-x-1 px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded transition">
+            <button onClick={cancelEdit} className="flex items-center space-x-1 px-3 py-1.5 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded transition">
               <X size={16} /> <span>Cancel</span>
             </button>
             <button onClick={submitEdit} className="flex items-center space-x-1 px-3 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded transition shadow-sm">
@@ -133,18 +134,22 @@ const TaskItem = ({ task }) => {
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ scale: 1.01 }}
-      className={`p-5 rounded-2xl shadow-sm border flex items-start space-x-4 transition-all group ${
-        task.status === 'Completed' ? 'bg-white opacity-60 border-green-100' : 
-        deadlineStatus === 'Overdue' ? 'bg-red-50 border-red-400 shadow-md ring-1 ring-red-400' :
-        deadlineStatus === 'Near' ? 'bg-orange-50 border-orange-300 shadow-md ring-1 ring-orange-300' :
-        task.status === 'InProgress' ? 'bg-white opacity-100 border-blue-200 shadow-md' : 
-        'bg-white opacity-100 border-gray-100'
+      whileHover={{ y: -4, shadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}
+      className={`p-5 rounded-3xl border flex items-start space-x-4 transition-all duration-500 group relative hover:z-50 ${
+        task.status === 'Completed' ? 'bg-white/40 dark:bg-black/40 opacity-60 border-green-100 dark:border-green-900/10' : 
+        deadlineStatus === 'Overdue' ? 'bg-red-50/80 dark:bg-red-950/40 border-red-400 dark:border-red-600 shadow-lg dark:shadow-red-900/20 ring-1 ring-red-400 dark:ring-red-600/30' :
+        deadlineStatus === 'Near' ? 'bg-orange-50/80 dark:bg-orange-950/40 border-orange-300 dark:border-orange-500 shadow-lg dark:shadow-orange-900/20 ring-1 ring-orange-300 dark:ring-orange-500/30' :
+        task.status === 'InProgress' ? 'glass-card opacity-100 border-indigo-200 dark:border-indigo-500/30 shadow-xl dark:shadow-indigo-900/20' : 
+        'glass-card opacity-100 border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md'
       }`}
     >
+      {/* Subtle background glow for active tasks */}
+      {!task.status === 'Completed' && (
+        <div className="absolute -right-10 -top-10 w-32 h-32 bg-indigo-500/5 blur-3xl rounded-full group-hover:bg-indigo-500/10 transition-colors duration-500"></div>
+      )}
       <div className={`mt-1 flex-shrink-0 ${
         task.status === 'Completed' ? 'text-green-500' :
         task.status === 'InProgress' ? 'text-blue-500' :
@@ -157,46 +162,32 @@ const TaskItem = ({ task }) => {
       
       <div className="flex-grow">
         <h4 className={`text-lg font-bold transition-colors ${
-          task.status === 'Completed' ? 'line-through text-gray-400' : 
-          task.status === 'InProgress' ? 'text-blue-800' : 
-          'text-gray-800'
+          task.status === 'Completed' ? 'line-through text-gray-400 dark:text-slate-500' : 
+          task.status === 'InProgress' ? 'text-blue-800 dark:text-blue-400' : 
+          'text-gray-800 dark:text-slate-100'
         }`}>
           {task.title}
         </h4>
-        {task.description && <p className={`mt-1 text-sm ${task.status === 'Completed' ? 'text-gray-400 line-through' : 'text-gray-600'}`}>{task.description}</p>}
+        {task.description && <p className={`mt-1 text-sm ${task.status === 'Completed' ? 'text-gray-400 dark:text-slate-500 line-through' : 'text-gray-600 dark:text-slate-400'}`}>{task.description}</p>}
         
         <div className="flex flex-wrap items-center gap-3 mt-3">
-          <div className="relative inline-block">
-            <select
-              value={task.status}
-              aria-label="Change Task Status"
-              onChange={async (e) => {
-                const newStatus = e.target.value;
-                try {
-                  await dispatch(updateTask({ id: task._id, taskData: { status: newStatus } })).unwrap();
-                  toast.success(`Status updated to ${newStatus}`);
-                } catch (error) {
-                  // Reverted optimistically, toast handled globally
-                }
-              }}
-              className={`text-xs font-semibold pl-3 pr-7 py-0.5 rounded-full cursor-pointer appearance-none transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                task.status === 'Completed' ? 'bg-green-100 text-green-800 border border-green-200 hover:bg-green-200' :
-                task.status === 'InProgress' ? 'bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200' :
-                'bg-yellow-100 text-yellow-800 border border-yellow-200 hover:bg-yellow-200'
-              }`}
-            >
-              <option value="Todo">Todo</option>
-              <option value="InProgress">In Progress</option>
-              <option value="Completed">Completed</option>
-            </select>
-            <div className={`absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none ${
-              task.status === 'Completed' ? 'text-green-600' :
-              task.status === 'InProgress' ? 'text-blue-600' :
-              'text-yellow-600'
-            }`}>
-              <ChevronDown size={12} strokeWidth={3} />
-            </div>
-          </div>
+          <CustomDropdown
+            value={task.status}
+            options={[
+              { value: 'Todo', label: 'Todo', icon: <Clock size={12} />, iconColor: 'text-yellow-500' },
+              { value: 'InProgress', label: 'In Progress', icon: <PenTool size={12} />, iconColor: 'text-blue-500' },
+              { value: 'Completed', label: 'Completed', icon: <CheckCircle size={12} />, iconColor: 'text-green-500' },
+            ]}
+            onChange={async (newStatus) => {
+              try {
+                await dispatch(updateTask({ id: task._id, taskData: { status: newStatus } })).unwrap();
+                toast.success(`Status updated to ${newStatus}`);
+              } catch (error) {
+                // Handled globally
+              }
+            }}
+            className="w-32"
+          />
           <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${priorityColors[task.priority]}`}>
             {task.priority}
           </span>
@@ -204,7 +195,7 @@ const TaskItem = ({ task }) => {
             <span className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-md border ${
               deadlineStatus === 'Overdue' ? 'text-white bg-red-600 border-red-600 font-bold shadow-sm animate-pulse text-sm' :
               deadlineStatus === 'Near' ? 'text-white bg-orange-500 border-orange-500 font-bold shadow-sm text-sm' :
-              'text-indigo-600 bg-indigo-50 border-indigo-100 text-xs'
+              'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 border-indigo-100 dark:border-indigo-800 text-xs'
             }`}>
               {deadlineStatus === 'Overdue' ? <AlertOctagon size={14} /> : 
                deadlineStatus === 'Near' ? <AlertTriangle size={14} /> : 
