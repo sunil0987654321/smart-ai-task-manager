@@ -1,79 +1,75 @@
-# DekNek Smart AI Task Manager 🚀
-> Elevate your productivity with AI-driven task intelligence and a seamless SaaS-grade experience.
+# TaskIQ 🚀
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen.svg)](https://your-demo-link.vercel.app)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+> Smart AI-powered task management for modern productivity.
 
-DekNek is a high-performance, full-stack task management application engineered for modern workflows. It leverages the power of **Google Gemini AI** to provide smart task recommendations, coupled with an advanced frontend architecture that ensures lightning-fast interactions and extreme reliability.
+TaskIQ is a full-stack, AI-powered task management application designed to help users organize, prioritize, and complete tasks efficiently. Built with a modern React + Redux architecture and a scalable Node.js backend, TaskIQ delivers a seamless SaaS-like experience.
+
+Powered by Google Gemini AI, TaskIQ provides intelligent task suggestions while leveraging advanced frontend techniques like optimistic UI updates, infinite scrolling, and debounced search for lightning-fast performance. With built-in deadline intelligence, real-time feedback, and accessibility-focused design, TaskIQ reflects production-grade engineering and UX standards.
+
+---
+
+## 🌐 Live Demo
+
+👉 **[Coming Soon! 🚀](#)**
+
+---
 
 ## 📸 Screenshots
 
-(Add your UI screenshots here — dashboard, login page, AI feature, etc.)
-
----
-
-## 💡 Future Enhancements
-
-* 🧑‍🤝‍🧑 Team collaboration features
-* 📅 Calendar integration
-* 📈 Advanced analytics
-* 📱 Mobile app version
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to fork this repository and submit a pull request.
-
----
-
-## ⭐ Show Your Support
-
-If you like this project, give it a ⭐ on GitHub!
-=======
 | Dashboard | AI Suggestions | Task Intelligence |
 | :---: | :---: | :---: |
-| ![Dashboard Placeholder](https://via.placeholder.com/800x450?text=Premium+Dashboard+UI) | ![AI Suggestions Placeholder](https://via.placeholder.com/800x450?text=AI+Generated+Tasks) | ![Task Detail Placeholder](https://via.placeholder.com/800x450?text=Deadline+Intelligence) |
+| ![Dashboard](./assets/screenshots/dashboard.png) | ![AI Suggestions](./assets/screenshots/ai_suggestions.png) | ![Task Intelligence](./assets/screenshots/task_intelligence.png) |
 
 ---
 
 ## ✨ Features (SaaS-Grade)
 
-- **🤖 Google Gemini AI Integration**: One-click intelligent task generation based on your current workload and planning context.
-- **⚡ Optimistic UI Updates**: Status toggles and deletions happen in milliseconds—the UI updates instantly while the server syncs in the background.
-- **⚠️ Deadline Intelligence**: Automatic real-time monitoring. Overdue tasks pulse red, while "Due Soon" tasks highlight in orange to ensure nothing slips through the cracks.
-- **🔍 Advanced Real-time Search**: Debounced search input (300ms) with multi-facet filtering (Priority, Status, Date).
-- **📂 Persistent State Management**: Your view preferences, search queries, and filters are preserved across sessions via `localStorage`.
-- **🚀 Infinite Scroll Pagination**: High-performance list rendering using `Intersection Observer` for a smooth, lag-free scrolling experience.
-- **🔔 Resilient Notifications**: Global toast system for successes and an intrusive, auto-dismissing Modal for critical Network Errors.
+* 🤖 **Google Gemini AI Integration**: Intelligent task recommendations based on your workflow.
+* ⚡ **Optimistic UI Updates**: Instant UI feedback for status changes and deletions.
+* ⚠️ **Deadline Intelligence**: Overdue tasks pulse red, “Due Soon” tasks highlight in orange.
+* 🔍 **Advanced Real-time Search**: Debounced search (300ms) with filtering (Priority, Status).
+* 📂 **Persistent State**: Filters and preferences stored in LocalStorage.
+* 🚀 **Infinite Scroll**: Smooth rendering using Intersection Observer.
+* 🔔 **Resilient Notifications**: Toast notifications + network error handling.
+
+---
+
+## 🧠 Why This Project Stands Out
+
+* AI-powered task planning using Google Gemini
+* Production-level frontend architecture (Redux normalization, memoization)
+* Advanced UX patterns (debounce, infinite scroll, optimistic UI)
+* Robust error handling with Axios interceptors
 
 ---
 
 ## 🛠️ Advanced Engineering Highlights
 
-- **Normalized Redux Architecture**: State managed via `byId` and `allIds` patterns for $O(1)$ lookup performance and simplified data updates.
-- **Computation Optimization**: Heavy usage of `useMemo` for derived states and `React.memo` for component stabilization, preventing unnecessary re-renders.
-- **Global Error Interceptors**: Axios interceptors handle authentication headers and global error catching, providing a unified "Network Guard" for the app.
-- **Resilient Logic**: Implemented `AbortController` patterns for rapid-fire filtering and custom event-driven communication for global UI components.
-- **Accessibility (A11y)**: Focus-ring management for keyboard navigation, high-contrast semantic indicators, and comprehensive ARIA labels.
+* **Normalized Redux Architecture** (`byId`, `allIds`)
+* **Performance Optimization** (`useMemo`, `React.memo`)
+* **Global Axios Interceptors** for centralized error handling
+* **AbortController** for request cancellation
+* **Accessibility (A11y)** with ARIA labels & focus states
 
 ---
 
 ## 🏗️ Tech Stack
 
 ### Frontend
-- **Core**: React 18 (Vite)
-- **State**: Redux Toolkit (RTK)
-- **Animations**: Framer Motion
-- **Styling**: Tailwind CSS
-- **Icons**: Lucide React
-- **Notifications**: React Hot Toast
+
+* React 18 (Vite)
+* Redux Toolkit
+* Tailwind CSS
+* Framer Motion
+* Lucide React
+* React Hot Toast
 
 ### Backend
-- **Runtime**: Node.js / Express
-- **Database**: MongoDB (Mongoose)
-- **AI Service**: Google Generative AI (Gemini 2.5 Flash)
-- **Auth**: JWT (JSON Web Tokens) & BcryptJS
+
+* Node.js / Express
+* MongoDB (Mongoose)
+* Google Gemini API
+* JWT Authentication
 
 ---
 
@@ -81,66 +77,79 @@ If you like this project, give it a ⭐ on GitHub!
 
 ```text
 code/
-├── client/                # React application (Frontend)
+├── client/
 │   ├── src/
-│   │   ├── app/           # Redux Store configuration
-│   │   ├── features/      # Redux Slices (Auth, Tasks)
-│   │   ├── components/    # Reusable UI components
-│   │   ├── pages/         # Page-level components
-│   │   ├── services/      # API & Axios configuration
-│   │   └── hooks/         # Custom React hooks (useDebounce, etc.)
-├── server/                # Express application (Backend)
+│   │   ├── app/
+│   │   ├── features/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── hooks/
+├── server/
 │   ├── src/
-│   │   ├── controllers/   # Business logic
-│   │   ├── models/        # Database schemas
-│   │   ├── routes/        # API Endpoints
-│   │   └── middleware/    # Auth & Error handlers
+│   │   ├── controllers/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   └── middleware/
 ```
 
 ---
 
 ## 🚀 Getting Started
 
-### 1. Clone the repository
+### 1. Clone Repository
+
 ```bash
 git clone https://github.com/Sunil0987654321/Smart-AI-Task-Manager.git
 cd Smart-AI-Task-Manager
 ```
 
+---
+
 ### 2. Backend Setup
+
 ```bash
 cd code/server
 npm install
 ```
+
 Create a `.env` file:
+
 ```env
 PORT=5000
-MONGO_URI=your_mongodb_atlas_connection_string
-JWT_SECRET=your_jwt_super_secret_key
-GEMINI_API_KEY=your_google_gemini_api_key
+MONGO_URI=your_mongodb_uri
+JWT_SECRET=your_secret
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
+---
+
 ### 3. Frontend Setup
+
 ```bash
 cd ../client
 npm install
 ```
+
 Create a `.env` file:
+
 ```env
 VITE_API_URL=http://localhost:5000/api
 ```
 
 ---
 
-## 🏃 Running the App
+## ▶️ Run the App
 
-### Start Backend
+### Backend
+
 ```bash
 cd code/server
 npm run dev
 ```
 
-### Start Frontend
+### Frontend
+
 ```bash
 cd code/client
 npm run dev
@@ -150,18 +159,27 @@ npm run dev
 
 ## ☁️ Deployment
 
-- **Frontend**: Highly optimized for **Vercel** or **Netlify**.
-- **Backend**: Ready for **Render**, **Railway**, or **Heroku**.
-- **Database**: Use **MongoDB Atlas** for a production-ready cloud database.
+* Frontend: Vercel
+* Backend: Render
+* Database: MongoDB Atlas
+
+---
+
+## 💡 Future Enhancements
+
+* 🧑‍🤝‍🧑 **Team collaboration features**
+* 📅 **Calendar integration**
+* 📈 **Advanced analytics**
+* 📱 **Mobile app version**
 
 ---
 
 ## 👨‍💻 Author
 
-**Your Name**
-- [LinkedIn](https://linkedin.com/in/yourprofile)
-- [GitHub](https://github.com/yourusername)
-- [Portfolio](https://yourportfolio.com)
+**Sunil Patturi**
+
+* GitHub: [https://github.com/Sunil0987654321](https://github.com/Sunil0987654321)
+* LinkedIn: [https://www.linkedin.com/in/sunil-kumar-patturi-13118828a/](https://www.linkedin.com/in/sunil-kumar-patturi-13118828a/)
 
 ---
 
