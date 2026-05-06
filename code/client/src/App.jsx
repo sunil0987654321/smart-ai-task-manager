@@ -21,6 +21,19 @@ const PageLoader = () => (
 
 function App() {
   const [showNetworkModal, setShowNetworkModal] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('theme') === 'dark';
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [darkMode]);
 
   useEffect(() => {
     const handleNetworkError = () => {
@@ -34,10 +47,12 @@ function App() {
     return () => window.removeEventListener('network-error', handleNetworkError);
   }, []);
 
+  const toggleDarkMode = () => setDarkMode(!darkMode);
+
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-        <Navbar />
+      <div className={`min-h-screen transition-all duration-500 ${darkMode ? 'dark-mesh text-slate-100' : 'bg-gray-50 text-gray-900'} font-sans`}>
+        <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
         <main className="max-w-7xl mx-auto p-4 md:p-8">
           <ErrorBoundary>
             <Suspense fallback={<PageLoader />}>
