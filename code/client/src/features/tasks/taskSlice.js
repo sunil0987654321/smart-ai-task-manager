@@ -11,6 +11,8 @@ const initialState = {
   isSuccess: false,
   isLoading: false,
   message: '',
+  taskSuggestionsResult: null,
+  isTaskSuggestionsLoading: false,
 };
 
 export const getTasks = createAsyncThunk('tasks/getAll', async (_, thunkAPI) => {
@@ -65,6 +67,16 @@ export const suggestTasks = createAsyncThunk('tasks/suggest', async (_, thunkAPI
   }
 });
 
+export const getTaskSuggestions = createAsyncThunk('tasks/getTaskSuggestions', async (data, thunkAPI) => {
+  try {
+    const response = await api.post('/ai/task-suggestions', data);
+    return response.data;
+  } catch (error) {
+    const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+    return thunkAPI.rejectWithValue(message);
+  }
+});
+
 
 export const taskSlice = createSlice({
   name: 'tasks',
@@ -73,6 +85,9 @@ export const taskSlice = createSlice({
     resetTasks: (state) => initialState,
     setNetworkError: (state, action) => {
       state.showNetworkError = action.payload;
+    },
+    resetTaskSuggestionsResult: (state) => {
+      state.taskSuggestionsResult = null;
     },
   },
   extraReducers: (builder) => {
@@ -136,9 +151,20 @@ export const taskSlice = createSlice({
       })
       .addCase(suggestTasks.fulfilled, (state, action) => {
         state.suggestions = action.payload;
+      })
+      .addCase(getTaskSuggestions.pending, (state) => {
+        state.isTaskSuggestionsLoading = true;
+      })
+      .addCase(getTaskSuggestions.fulfilled, (state, action) => {
+        state.isTaskSuggestionsLoading = false;
+        state.taskSuggestionsResult = action.payload;
+      })
+      .addCase(getTaskSuggestions.rejected, (state, action) => {
+        state.isTaskSuggestionsLoading = false;
+        state.message = action.payload;
       });
   },
 });
 
-export const { resetTasks, setNetworkError } = taskSlice.actions;
+export const { resetTasks, setNetworkError, resetTaskSuggestionsResult } = taskSlice.actions;
 export default taskSlice.reducer;

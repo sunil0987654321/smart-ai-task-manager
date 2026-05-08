@@ -5,10 +5,12 @@ import { Trash2, CheckCircle, Circle, Edit2, Calendar, Save, X, PlayCircle, Chev
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import CustomDropdown from './CustomDropdown';
+import StatusModal from './StatusModal';
 
 const TaskItem = ({ task }) => {
   const dispatch = useDispatch();
   const [isEditing, setIsEditing] = useState(false);
+  const [modalState, setModalState] = useState({ isOpen: false, type: null });
   const [editData, setEditData] = useState({
     title: task.title,
     description: task.description || '',
@@ -119,10 +121,10 @@ const TaskItem = ({ task }) => {
             />
           </div>
           <div className="flex justify-end space-x-2 pt-2">
-            <button onClick={cancelEdit} className="flex items-center space-x-1 px-3 py-1.5 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded transition">
+            <button onClick={cancelEdit} className="flex items-center space-x-1 px-3 py-1.5 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded transition focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900">
               <X size={16} /> <span>Cancel</span>
             </button>
-            <button onClick={submitEdit} className="flex items-center space-x-1 px-3 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded transition shadow-sm">
+            <button onClick={submitEdit} className="flex items-center space-x-1 px-3 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded transition shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 active:scale-95">
               <Save size={16} /> <span>Save</span>
             </button>
           </div>
@@ -133,13 +135,12 @@ const TaskItem = ({ task }) => {
 
   return (
     <motion.div
-      layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ y: -4, shadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}
+      whileHover={{ y: -4, scale: 1.01, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)' }}
       className={`p-5 rounded-3xl border flex items-start space-x-4 transition-all duration-500 group relative hover:z-50 ${
-        task.status === 'Completed' ? 'bg-white/40 dark:bg-black/40 opacity-60 border-green-100 dark:border-green-900/10' : 
+        task.status === 'Completed' ? 'bg-white/40 dark:bg-black/40 opacity-70 border-green-200 dark:border-green-900/20' : 
         deadlineStatus === 'Overdue' ? 'bg-red-50/80 dark:bg-red-950/40 border-red-400 dark:border-red-600 shadow-lg dark:shadow-red-900/20 ring-1 ring-red-400 dark:ring-red-600/30' :
         deadlineStatus === 'Near' ? 'bg-orange-50/80 dark:bg-orange-950/40 border-orange-300 dark:border-orange-500 shadow-lg dark:shadow-orange-900/20 ring-1 ring-orange-300 dark:ring-orange-500/30' :
         task.status === 'InProgress' ? 'glass-card opacity-100 border-indigo-200 dark:border-indigo-500/30 shadow-xl dark:shadow-indigo-900/20' : 
@@ -150,15 +151,20 @@ const TaskItem = ({ task }) => {
       {!task.status === 'Completed' && (
         <div className="absolute -right-10 -top-10 w-32 h-32 bg-indigo-500/5 blur-3xl rounded-full group-hover:bg-indigo-500/10 transition-colors duration-500"></div>
       )}
-      <div className={`mt-1 flex-shrink-0 ${
-        task.status === 'Completed' ? 'text-green-500' :
-        task.status === 'InProgress' ? 'text-blue-500' :
-        'text-yellow-500'
-      }`}>
+      <motion.div 
+        className={`mt-1 flex-shrink-0 ${
+          task.status === 'Completed' ? 'text-green-500' :
+          task.status === 'InProgress' ? 'text-blue-500' :
+          'text-yellow-500'
+        }`}
+        initial={false}
+        animate={{ scale: task.status === 'Completed' ? [1, 1.2, 1] : 1 }}
+        transition={{ duration: 0.3 }}
+      >
         {task.status === 'Completed' ? <CheckCircle size={24} /> : 
          task.status === 'InProgress' ? <PlayCircle size={24} /> : 
          <Circle size={24} />}
-      </div>
+      </motion.div>
       
       <div className="flex-grow">
         <h4 className={`text-lg font-bold transition-colors ${
@@ -179,9 +185,14 @@ const TaskItem = ({ task }) => {
               { value: 'Completed', label: 'Completed', icon: <CheckCircle size={12} />, iconColor: 'text-green-500' },
             ]}
             onChange={async (newStatus) => {
+              if (newStatus === task.status) return;
               try {
                 await dispatch(updateTask({ id: task._id, taskData: { status: newStatus } })).unwrap();
-                toast.success(`Status updated to ${newStatus}`);
+                if (newStatus === 'InProgress' || newStatus === 'Completed') {
+                  setModalState({ isOpen: true, type: newStatus });
+                } else {
+                  toast.success(`Status updated to ${newStatus}`);
+                }
               } catch (error) {
                 // Handled globally
               }
@@ -213,10 +224,10 @@ const TaskItem = ({ task }) => {
         </div>
       </div>
 
-      <div className="flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100">
         <button
           onClick={() => setIsEditing(true)}
-          className="flex-shrink-0 text-gray-400 hover:text-indigo-500 p-1 transition rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="flex-shrink-0 text-gray-400 hover:text-indigo-500 p-1 transition rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
           title="Edit Task"
           aria-label="Edit Task"
         >
@@ -224,13 +235,19 @@ const TaskItem = ({ task }) => {
         </button>
         <button
           onClick={handleDelete}
-          className="flex-shrink-0 text-gray-400 hover:text-red-500 p-1 transition rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="flex-shrink-0 text-gray-400 hover:text-red-500 p-1 transition rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
           title="Delete Task"
           aria-label="Delete Task"
         >
           <Trash2 size={18} />
         </button>
       </div>
+
+      <StatusModal 
+        isOpen={modalState.isOpen} 
+        onClose={() => setModalState(prev => ({ ...prev, isOpen: false }))} 
+        type={modalState.type} 
+      />
     </motion.div>
   );
 };
