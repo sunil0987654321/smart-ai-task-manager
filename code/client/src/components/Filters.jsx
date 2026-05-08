@@ -1,10 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, SortAsc, AlertCircle, Clock, List } from 'lucide-react';
 import { motion } from 'framer-motion';
 import CustomDropdown from './CustomDropdown';
+import { useDebounce } from '../hooks/useDebounce';
 
 const Filters = ({ searchTerm, setSearchTerm, filterPriority, setFilterPriority, sortOption, setSortOption }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [localSearch, setLocalSearch] = useState(searchTerm);
+  const debouncedSearch = useDebounce(localSearch, 300);
+
+  // Sync parent search term changes back to local state (e.g. on reset/clear)
+  useEffect(() => {
+    setLocalSearch(searchTerm);
+  }, [searchTerm]);
+
+  // Sync debounced search value to parent
+  useEffect(() => {
+    setSearchTerm(debouncedSearch);
+  }, [debouncedSearch, setSearchTerm]);
 
   const priorityOptions = [
     { value: 'All', label: 'All Priorities', icon: <Filter size={14} />, iconColor: 'text-indigo-500' },
@@ -24,10 +37,10 @@ const Filters = ({ searchTerm, setSearchTerm, filterPriority, setFilterPriority,
       {/* Expandable Search Bar */}
       <motion.div 
         initial={false}
-        animate={{ width: isExpanded || searchTerm ? '200px' : '40px' }}
+        animate={{ width: isExpanded || localSearch ? '200px' : '40px' }}
         className="relative flex items-center h-10 overflow-hidden rounded-xl border border-gray-200 dark:border-white/10 bg-white/50 dark:bg-black/40 backdrop-blur-md group"
         onMouseEnter={() => setIsExpanded(true)}
-        onMouseLeave={() => !searchTerm && setIsExpanded(false)}
+        onMouseLeave={() => !localSearch && setIsExpanded(false)}
         onClick={() => setIsExpanded(true)}
       >
         <div className="absolute left-3 text-gray-500 dark:text-slate-400 group-hover:text-indigo-500 transition-colors pointer-events-none">
@@ -36,11 +49,11 @@ const Filters = ({ searchTerm, setSearchTerm, filterPriority, setFilterPriority,
         <input 
           type="text" 
           placeholder="Search..." 
-          className={`w-full pl-10 pr-4 py-2 bg-transparent outline-none text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 transition-opacity duration-300 ${isExpanded || searchTerm ? 'opacity-100' : 'opacity-0'}`}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          className={`w-full pl-10 pr-4 py-2 bg-transparent outline-none text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 transition-opacity duration-300 ${isExpanded || localSearch ? 'opacity-100' : 'opacity-0'}`}
+          value={localSearch}
+          onChange={(e) => setLocalSearch(e.target.value)}
           onFocus={() => setIsExpanded(true)}
-          onBlur={() => !searchTerm && setIsExpanded(false)}
+          onBlur={() => !localSearch && setIsExpanded(false)}
         />
       </motion.div>
 

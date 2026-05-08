@@ -91,9 +91,22 @@
   100% { background-position: 300% 0%; }
 }
 
-/* Smooth theme transition */
-* {
-  transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+/* Smooth theme transitions targeted selectively to prevent layout thrashing */
+body, 
+header, 
+main, 
+footer, 
+.glass-card, 
+input, 
+select, 
+textarea, 
+button, 
+a, 
+div.transition-all {
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Custom Date Input Styling */
