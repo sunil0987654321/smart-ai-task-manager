@@ -10,7 +10,7 @@ Powered by Google Gemini AI, TaskIQ provides intelligent task suggestions while 
 
 ## 🌐 Live Demo
 
-👉 **[Coming Soon! 🚀](#)**
+👉 **[TaskIQ 🚀](smart-ai-task-manager-dun.vercel.app)**
 
 ---
 
@@ -178,8 +178,8 @@ npm run dev
 
 **Sunil Patturi**
 
-* GitHub: [https://github.com/Sunil0987654321](https://github.com/Sunil0987654321)
-* LinkedIn: [https://www.linkedin.com/in/sunil-kumar-patturi-13118828a/](https://www.linkedin.com/in/sunil-kumar-patturi-13118828a/)
+* [GitHub](https://github.com/Sunil0987654321)
+* [LinkedIn](https://www.linkedin.com/in/sunil-kumar-patturi-13118828a/)
 
 ---
 
